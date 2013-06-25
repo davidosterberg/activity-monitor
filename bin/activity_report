@@ -1,0 +1,55 @@
+#!/usr/bin/env python2.7
+#coding:utf-8
+
+import sys
+import datetime
+from numpy import array
+
+def main():
+    log = open('/home/em9dvg/.activity-monitor/log').readlines()
+
+
+    database = []
+
+
+    for line in log:
+        year = int(line[:4])
+        month = int(line[4:6])
+        day = int(line[6:8])
+        week = datetime.date(year,month,day).isocalendar()[1]
+        project = line[15:].strip()
+
+        database.append(("%d %d"%(year,week),project))
+
+
+    database = array(database)
+
+    yearweeks = sorted(set(database[:,0]))
+    projects = {}
+
+    for yearweek in yearweeks:
+        projects = {}
+
+        records = database[database[:,0]==yearweek,1]
+
+        N = len(records)
+        for r in records:
+            if projects.has_key(r):
+                projects[r] += 1./N
+            else:
+                projects[r] = 1./N
+
+        sys.stdout.write("%s  | " % yearweek)
+        for p in projects.keys():
+            pp = p.rjust(max(4,len(p)))
+            sys.stdout.write(pp+' | ')
+        sys.stdout.write('\n')
+        sys.stdout.write("         | ")
+        for p in projects.keys():
+            pp = p.rjust(max(4,len(p)))
+            sys.stdout.write(("%%%d.2f | " % len(pp)) % projects[p])
+        sys.stdout.write("Est. hours: %.1f" % (3.2*N))
+        sys.stdout.write('\n\n')
+
+if __name__ == "__main__":
+    main()

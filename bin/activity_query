@@ -1,0 +1,89 @@
+#!/usr/bin/env python2.7
+#encoding: utf-8
+
+import os
+import sys
+import signal
+import datetime
+
+debug = True
+
+# files
+lockfile =  os.path.expanduser("~/.activity-monitor/lock")
+debugfile = os.path.expanduser('~/.activity-monitor/debug')
+logfile =   os.path.expanduser('~/.activity-monitor/log')
+
+
+def clean_up():
+    os.remove(lockfile)
+    debugentry("Got kill signal. Exiting.")
+
+
+def debugentry(s):
+    if debug:
+        with open(debugfile,'a') as dlog:
+            dlog.write("%s: %s\n" % (datetime.datetime.now().strftime('%Y%m%d %H:%M'),s))
+
+
+def main():
+
+    debugentry("Activity-query was started")
+
+    signal.signal(signal.SIGTERM, clean_up)
+
+    # make sure we are alone
+    if os.path.exists(lockfile):
+        print('Lock-file found.')
+        debugentry("Lock-file found. Exiting.")
+        sys.exit(1)
+
+
+    try:
+        lock = open(lockfile,'w')
+        lock.close()
+
+        from easygui import *
+        import time
+        import random
+
+
+        # average time to wait between asking what you do (in seconds)
+        avg_period = 2*3600.
+
+        s = ""
+        elapsed = 0
+
+        while True:
+
+            T = -elapsed
+            while T <= 0:
+                T = T + random.expovariate(1./avg_period)
+
+            debugentry("Will sleep for %f h." % (T/3600.))
+
+            time.sleep(T)
+
+            debugentry("Opening dialog window.")
+
+            start = time.time()
+            s = enterbox(msg=u"What are you doing?",title="Activity-monitor", default=s)
+            elapsed = time.time() - start
+
+
+            debugentry("Elapsed time was %f s." % (elapsed))
+
+            if s and (elapsed < 60*60):
+
+                debugentry("Writing record to file.")
+
+                now = datetime.datetime.now().strftime('%Y%m%d %H:%M')
+                with open(logfile,'a') as log:
+                    log.write("%s %s\n" % (now, s))
+            else:
+                debugentry("Disregarded record due to timeout or empty string.")
+
+    finally:
+        clean_up()
+
+if __name__ == "__main__":
+    main()
