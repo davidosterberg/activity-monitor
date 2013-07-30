@@ -5,6 +5,9 @@ import os
 import sys
 import signal
 import datetime
+from easygui import *
+import time
+import random
 
 debug = True
 
@@ -42,9 +45,6 @@ def main():
         lock = open(lockfile,'w')
         lock.close()
 
-        from easygui import *
-        import time
-        import random
 
 
         # average time to wait between asking what you do (in seconds)
