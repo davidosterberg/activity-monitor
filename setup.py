@@ -22,7 +22,7 @@ setup(name = "activity-monitor",
     #This dict maps the package name =to=> directories
     #It says, package *needs* these files.
     long_description = """A utility to monitor how much time you spend on your projects""",
-    scripts=['bin/activity_report','bin/activity_query'],
+    scripts=['src/activity_report','src/activity_query'],
     entry_points = {'console_scripts': ['activity_report = activity_report:main',
                                         'activity_query = activity_query:main']}
 ) 
